@@ -1,0 +1,79 @@
+services:
+  shlink:
+    image: shlinkio/shlink:${SHLINK_VERSION:?required}
+    container_name: shlink
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DEFAULT_DOMAIN: ${SHLINK_HOSTNAME:?required}
+      IS_HTTPS_ENABLED: "true"
+    networks:
+      - traefik-network
+      - postgres-network
+      - internal-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Router — kısa link yönlendirme, herkese açık
+      - traefik.http.routers.shlink.rule=Host(`${SHLINK_HOSTNAME:?required}`)
+      - traefik.http.routers.shlink.entrypoints=https
+      - traefik.http.routers.shlink.tls.certresolver=cloudflare
+      - traefik.http.routers.shlink.service=shlink
+
+      # Service
+      - traefik.http.services.shlink.loadbalancer.server.port=8080
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/api/v3/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  shlink-redis:
+    image: redis:8-alpine
+    container_name: shlink-redis
+    restart: unless-stopped
+    networks:
+      - internal-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  shlink-admin:
+    image: shlinkio/shlink-web-client:${SHLINK_ADMIN_VERSION:?required}
+    container_name: shlink-admin
+    restart: unless-stopped
+    networks:
+      - traefik-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-network
+
+      # Router — yönetim paneli, IP kısıtlamalı
+      - traefik.http.routers.shlink-admin.rule=Host(`${SHLINK_ADMIN_HOSTNAME:?required}`)
+      - traefik.http.routers.shlink-admin.entrypoints=https
+      - traefik.http.routers.shlink-admin.tls.certresolver=cloudflare
+      - traefik.http.routers.shlink-admin.middlewares=trusted@file
+      - traefik.http.routers.shlink-admin.service=shlink-admin
+
+      # Service
+      - traefik.http.services.shlink-admin.loadbalancer.server.port=8080
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  traefik-network:
+    external: true
+  postgres-network:
+    external: true
+  internal-network:
+    internal: true
