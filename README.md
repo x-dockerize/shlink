@@ -43,12 +43,13 @@ shlink/
 
 ### 1. Veritabanı Oluşturma
 
-PostgreSQL sunucusunda Shlink için kullanıcı ve veritabanı oluştur:
+PostgreSQL sunucusunda Shlink için kullanıcı ve veritabanı oluştur. Bunun için paylaşımlı `postgres` servisinin sağladığı scripti kullan:
 
-```sql
-CREATE USER shlink WITH PASSWORD 'STRONG_PASSWORD';
-CREATE DATABASE shlink OWNER shlink;
+```bash
+bash ~/.x-dockerize/postgres/scripts/create-db.sh
 ```
+
+Script DB adı, kullanıcı adı ve şifreyi interaktif olarak sorar; şifreyi boş bırakırsan otomatik güçlü bir şifre üretir. İşlem sonunda bağlantı bilgilerini ekrana basar — `.env` dosyasını doldururken bu bilgileri kullan.
 
 ---
 
