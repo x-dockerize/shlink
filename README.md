@@ -78,6 +78,7 @@ cp .env.example .env
 | `DB_USER` | Veritabanı kullanıcısı |
 | `DB_NAME` | Veritabanı adı |
 | `DB_PASSWORD` | Veritabanı şifresi |
+| `SHLINK_API_KEY` | Shlink API anahtarı (admin paneline otomatik tanımlamak için) |
 | `GEOLITE_LICENSE_KEY` | MaxMind GeoLite2 lisans anahtarı (isteğe bağlı) |
 
 ---
@@ -90,7 +91,7 @@ docker compose -f docker-compose.production.yml up -d
 
 ---
 
-### 4. API Key Oluştur
+### 4. API Key Oluştur ve Tanımla
 
 Shlink Web Client'ı kullanabilmek için bir API key gerekir:
 
@@ -98,12 +99,13 @@ Shlink Web Client'ı kullanabilmek için bir API key gerekir:
 docker exec shlink shlink api-key:generate
 ```
 
-Çıktıdaki API key'i kopyala. Shlink Web Client'a ilk girişte şu bilgileri gir:
+Çıktıdaki API key'i kopyala ve `.env` dosyasındaki `SHLINK_API_KEY` değişkenine yapıştır. `shlink-admin` servisi başlarken bu anahtarı otomatik olarak yükler — her tarayıcıda tekrar tekrar sunucu tanımlamak gerekmez.
 
-| Alan | Değer |
-|---|---|
-| Server URL | `https://links.example.com` |
-| API Key | Yukarıda üretilen key |
+Değişikliği uygulamak için `shlink-admin` servisini yeniden başlat:
+
+```bash
+docker compose -f docker-compose.production.yml up -d shlink-admin
+```
 
 ---
 

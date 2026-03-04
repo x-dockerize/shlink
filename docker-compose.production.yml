@@ -47,6 +47,9 @@ services:
     image: shlinkio/shlink-web-client:${SHLINK_ADMIN_VERSION:?required}
     container_name: shlink-admin
     restart: unless-stopped
+    environment:
+      - SHLINK_SERVER_URL=https://${SHLINK_HOSTNAME:?required}
+      - SHLINK_SERVER_API_KEY=${SHLINK_API_KEY:?required}
     networks:
       - traefik-network
     labels:
